@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials') 
+        IMAGE_NAME = "sushmitha6300/flask-app"
+    }
+
+    stages {
+        stage('Clone Code') {
+            steps {
+                git 'https://github.com/Sushmitha6300/ansible-flask-docker.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $DOCKERHUB_USER/sushmitha6300/flask-app:latest .'
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                sh """
+                echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin
+                docker push $DOCKERHUB_USER/sushmitha6300/flask-app:latest
+                """
+            }
+        }
+
+        stage('Deploy with Ansible') {
+            steps {
+                sh 'ansible-playbook -i inventory.ini playbook.yml'
+            }
+        }
+    }
+}
