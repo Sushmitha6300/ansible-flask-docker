@@ -29,7 +29,21 @@ pipeline {
                 }
             }
         }
+        
+        stage('Test Environment') {
+            steps {
+                sh '''
+                   echo "Current user: $(whoami)"
+                   echo "Current directory: $(pwd)"
+                   echo "PATH: $PATH"
+                   echo "Checking if Ansible is available:"
+                   which ansible-playbook || echo "ansible-playbook not found"
+                   ls -l /usr/bin/ansible-playbook || echo "No access to /usr/bin/ansible-playbook"
+                '''
+            }
+        }
 
+    
         stage('Deploy with Ansible') {
             steps {
                 sh '/usr/bin/ansible-playbook -i inventory.ini playbook.yml'
