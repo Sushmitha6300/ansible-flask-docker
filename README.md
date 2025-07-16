@@ -1,19 +1,19 @@
 # Flask App CI/CD with Jenkins, Docker & Ansible
 
-This project demonstrates a complete CI/CD pipeline that uses Jenkins to build and push a Dockerized Flask app to DockerHub, and Ansible to deploy and run the containerized app on an AWS EC2 instance.
+This project showcases a complete CI/CD pipeline for a Flask application. Jenkins automates the build and push of a Dockerized Flask app to Docker Hub, while Ansible handles the deployment of the containerized app onto a target EC2 instance in AWS.
 
 ---
 
 ## Tools & Technologies Used
 
-- **Python (Flask)** – Lightweight web framework used to build the app
-- **Docker** – To containerize the Flask application
-- **DockerHub** – Remote registry to store and retrieve Docker images
-- **Jenkins** – Automates the build and push stages in the CI pipeline
-- **Ansible** – Automates deployment of the Docker container on EC2
-- **Git & GitHub** – Version control and trigger source for the pipeline
-- **AWS EC2** – Cloud instances used for Jenkins and app deployment
-- **Terraform** – To provision AWS infrastructure
+- **Python (Flask)** – For building the lightweight web application.
+- **Docker** – Used to containerize the Flask application.
+- **DockerHub** – Serves as the remote registry for storing Docker images.
+- **Jenkins** – Automates the CI pipeline: building and pushing Docker images.
+- **Ansible** – Handles the automated deployment of the Docker container on EC2.
+- **Git & GitHub** – Used for version control and as the source trigger for Jenkins.
+- **AWS EC2** – Hosts both the Jenkins controller and the target deployment instance.
+- **Terraform** – Provisions and manages all the required AWS infrastructure.
 
 ---
 
@@ -43,13 +43,17 @@ This DevOps project showcases a fully automated CI/CD pipeline to build, ship, a
 
 GitHub ──► Jenkins ──► DockerHub ──► Ansible ──► EC2 ──► Flask App
 
-1. Jenkins watches GitHub repo for changes
-2. On push:
-   - Pulls code
-   - Builds Docker image from Dockerfile
-   - Pushes image to DockerHub
-   - Runs Ansible playbook to deploy container on EC2
+1. Jenkins monitors the GitHub repository for code changes
 
+2. On every push:
+
+   - Pulls the latest code from GitHub
+   - Builds a Docker image using the provided Dockerfile
+   - Pushes the image to DockerHub
+   - Triggers an Ansible playbook that connects to EC2
+   - The EC2 instance pulls the Docker image and runs the container
+
+3. Flask app becomes publicly accessible on port 5000
 ---
 
 ## Architecture Diagram
@@ -59,10 +63,13 @@ GitHub ──► Jenkins ──► DockerHub ──► Ansible ──► EC2 ─
 ## Project Structure 
 ```bash
 ansible-flask-docker/
+│── ansible/
+│   ├── playbook.yml
 ├── terraform/
 │   ├── main.tf
 │   ├── outputs.tf
 │   └── variables.tf
+│   └── terraform.tfvars
 ├── flask-app/
 │   ├── app.py
 │   ├── requirements.txt
@@ -79,7 +86,7 @@ ansible-flask-docker/
 ### 🔹 Step 1: Clone the Repository
 ```bash
 git clone https://github.com/Sushmitha6300/ansible-flask-docker.git
-cd ansible-flask-docker
+cd ansible-flask-docker/terraform 
 ```
 
 ### 🔹 Step 2: Generate an SSH Key Pair
@@ -97,187 +104,88 @@ ansible-key.pub (public key)
 
 ### 🔹 Step 3: Provision AWS Infrastructure Using Terraform
 ```bash
-cd terraform
 terraform init
 terraform apply
 ```
 
 ✅ This will launch:
 
-- Controller EC2 instance – Hosts Jenkins and Ansible, responsible for CI/CD orchestration and deployment automation
+**Ansible Controller EC2 Instance**
+  - This is the instance where Ansible will be installed and run the playbook to configure the target.
 
-- Target EC2 instance – Acts as the deployment environment where the Flask app container is pulled and run
+**Target EC2 Instance**
+- This is the instance where your Flask app will run inside a Docker container. Ansible will connect to this instance and install Docker, Jenkins, etc.
+
+**Install Ansible** on the controller instance
+
+**Copy necessary files to the controller:**
+- ansible-key (SSH private key)
+- Set correct file permissions for the private key on the controller (chmod 400)
+- playbook.yml (Ansible playbook)
+- Auto-generates inventory.ini file (with the private IP of the target node)
+
+**❗Note: Terraform does NOT run the playbook automatically. This is because, right after the EC2 instance is created, it may still be starting up, installing packages, or finishing setup in the background. To avoid any errors, we wait and run the playbook manually after everything settles.**
 
 ### 🔹 Step 4: SSH into the Controller EC2
 ```bash
 ssh -i ansible-key ubuntu@controller-public-ip
 ```
 
-### 🔹 Step 5: Copy the Private Key to the Controller EC2
+### 🔹 Step 5: Edit the Ansible Playbook on the Controller Instance
 
-Enter exit on the instance and run this from your project folder(ansible-flask-docker):
+Open the playbook:
 ```bash
-scp -i ansible-key ansible-key ubuntu@controller-public-ip:/home/ubuntu/
-```
-
-### 🔹 Step 6: SSH into the Controller EC2:
-
-Run this command in ansible-flask-docker/terraform folder:
-```bash
-ssh -i ansible-key ubuntu@controller-public-ip
-```
-
-Run this command on the Controller EC2:
-```bash
-chmod 400 ansible-key
-```
-
-### 🔹 Step 7: Install Ansible on the Controller
-
-On the controller instance:
-```bash
-sudo apt update
-sudo apt install -y ansible
-```
-
-### 🔹 Step 8: Create and Run Ansible Playbook
-```bash 
-mkdir ansible-setup && cd ansible-setup
-nano inventory.ini
-```
-paste this: 
-```bash
-[web]
-<target-private-ip> ansible_user=ubuntu ansible_ssh_private_key_file=~/ansible-key
-```
-
-**Save and Exit:**
-
-Ctrl + o
-
-Click Enter
-
-Ctrl + x
-
-```bash 
 nano playbook.yml
 ```
-paste this:
+
+Modify the playbook:
+
+Delete the following section and save the file(Ctrl+o, enter, Ctrl+x). 
 ```bash
----
-- name: Configure Target Node with Docker and Jenkins
-  hosts: web
-  become: yes
+- name: Prepare Ansible inventory and configure Target Node
+  hosts: localhost
+  become: false
 
   tasks:
-
-    - name: Update and upgrade packages
-      apt:
-        update_cache: yes
-        upgrade: dist
-
-    - name: Install Docker
-      apt:
-        name: docker.io
-        state: present
-
-    - name: Enable and start Docker
-      systemd:
-        name: docker
-        enabled: yes
-        state: started
-
-    - name: Add ubuntu user to docker group
-      user:
-        name: ubuntu
-        groups: docker
-        append: yes
-
-    - name: Install required packages for Jenkins
-      apt:
-        name:
-          - curl
-          - gnupg2
-          - fontconfig
-          - openjdk-17-jdk
-        state: present
-
-    - name: Add Jenkins GPG key
-      shell: |
-        curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-      args:
-        executable: /bin/bash
-
-    - name: Add Jenkins repo
-      shell: |
-        echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ | tee /etc/apt/sources.list.d/jenkins.list > /dev/null
-      args:
-        executable: /bin/bash
-
-    - name: Update APT cache with Jenkins repo
-      apt:
-        update_cache: yes
-
-    - name: Install Jenkins
-      apt:
-        name: jenkins
-        state: present
-
-    - name: Enable and start Jenkins
-      systemd:
-        name: jenkins
-        enabled: yes
-        state: started
-
-    - name: Add jenkins user to docker group
-      user:
-        name: jenkins
-        groups: docker
-        append: yes
-
-    - name: Restart Jenkins
-      systemd:
-        name: jenkins
-        state: restarted
-
+    - name: Create inventory.ini with target IP
+      copy:
+        dest: /home/ubuntu/inventory.ini
+        content: |
+          [web]
+          {{ target_private_ip }} ansible_user=ubuntu ansible_ssh_private_key_file=/home/ubuntu/ansible-ke
 ```
 
-**Save and Exit:**
+It's no longer needed since the inventory.ini file is already present. When you run the playbook without removing it tries to generate the inventory dynamically using a variable ({{ target_private_ip }}).
 
-Ctrl + o
+But that variable is passed only when Terraform runs the playbook using remote-exec — not when you run the playbook manually via SSH. So if you keep that part and run the playbook manually, it will fail with an error like:
+```bash 
+The task includes an option with an undefined variable. The error was: 'target_private_ip' is undefined
+```
 
-Click Enter
-
-Ctrl + x
-
-Run the playbook:
+### 🔹 Step 6: Run the playbook
 ```bash
 ansible-playbook -i inventory.ini playbook.yml
 ```
 
-### 🔹 Step 9: SSH into the Target EC2 and Retrieve Jenkins Admin Password
-
-After running the Ansible playbook from the ansible/ folder on the controller instance, navigate back using "cd .." and SSH into the target node to retrieve the Jenkins initial admin password and verify the setup.
-
+### 🔹 Step 7: SSH into the Target EC2 and Retrieve Jenkins Admin Password
 ```bash
 ssh -i ansible-key ubuntu@target-private-ip
 ```
+
 ```bash
 sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 ```
 
-### 🔹 Step 10: Access Jenkins Web UI
+### 🔹 Step 8: Access Jenkins Web UI
 
 Visit: 
 ```bash
 http://target-public-ip:8080
 ```
 
-Paste the admin password
-
-Select "Install suggested plugins"
-
-Settings ──► Manage jenkins ──► plugins 
+- Paste the admin password
+- Select "Install suggested plugins"
+- Settings ──► Manage jenkins ──► plugins 
 
 **Install the following plugins:**
 
@@ -303,9 +211,25 @@ Use this token as the password when adding DockerHub credentials in Jenkins
 - Password: DockerHub Personal Access Token
 - ID: dockerhub-credentials
 
-### 🔹 Step 11: Trigger the Jenkins Pipeline
+**Add SSH Credentials in Jenkins (via Manage Jenkins → Credentials → Global)**
 
-**Push the project to GitHub**
+- Kind: SSH Username with private key
+- ID: controller-ssh-key
+- Username: ubuntu
+- Private Key: Select Enter directly and paste the content of your private key (ansible-key)
+
+✅ This allows Jenkins to SSH into the Ansible controller and trigger the deployment remotely.
+
+### 🔹 Step 9: Update Controller IP in Jenkinsfile
+
+In your Jenkinsfile, replace the controller-ec2-public-ip with the actual public IP of your controller EC2 instance:
+```bash
+ssh -o StrictHostKeyChecking=no ubuntu@controller-ec2-public-ip
+```
+
+✅ This ensures Jenkins can connect to the controller instance during deployment.
+
+### 🔹 Step 10: Push the project to GitHub
 
 - Go to GitHub and create a new public repository named anisble-flask-dcoker
 
@@ -324,7 +248,7 @@ Make sure to replace your-username with your actual GitHub username
 
 **Set up the Jenkins pipeline**
 
-- Go to Jenkins → New Item → Enter a name → Select Pipeline
+- Go to Jenkins → New Item → Enter a name (flask-ci-cd-pipeline) → Select Pipeline → Click OK
 - Under Pipeline script from SCM:
 - SCM: Git
 - Repository URL: your GitHub repo URL
@@ -339,7 +263,7 @@ Make sure to replace your-username with your actual GitHub username
 - Push it to DockerHub
 - Run the Ansible playbook to deploy the container on target EC2
 
-### 🔹 Step 12: Access the Flask App in Browser
+### 🔹 Step 11: Access the Flask App in Browser
 
 Open your app in a browser:
 ```bash

@@ -17,3 +17,7 @@ variable "key_name" {
 variable "public_key_path" {
     default = "./ansible-key.pub"
 }
+
+variable "private_key_path" {
+    default = "./ansible-key"
+}

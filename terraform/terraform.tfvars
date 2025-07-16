@@ -1,0 +1,5 @@
+region = "us-east-1"
+az1 = "us-east-1a"
+instance_type = "t2.micro"
+public_key_path  = "./ansible-key.pub"
+private_key_path = "./ansible-key"

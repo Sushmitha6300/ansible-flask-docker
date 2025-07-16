@@ -1,0 +1,91 @@
+---
+- name: Prepare Ansible inventory and configure Target Node
+  hosts: localhost
+  become: false
+
+  tasks:
+    - name: Create inventory.ini with target IP
+      copy:
+        dest: /home/ubuntu/inventory.ini
+        content: |
+          [web]
+          {{ target_private_ip }} ansible_user=ubuntu ansible_ssh_private_key_file=/home/ubuntu/ansible-key
+
+- name: Configure Target Node with Docker and Jenkins
+  hosts: web
+  become: yes
+
+  tasks:
+    - name: Update and upgrade packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Enable and start Docker
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Ensure docker group exists
+      group:
+        name: docker
+        state: present
+
+    - name: Add ubuntu user to docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Install required packages for Jenkins
+      apt:
+        name:
+          - curl
+          - gnupg2
+          - fontconfig
+          - openjdk-17-jdk
+        state: present
+
+    - name: Add Jenkins GPG key
+      shell: |
+        curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+      args:
+        executable: /bin/bash
+
+    - name: Add Jenkins repo
+      shell: |
+        echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ | tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+      args:
+        executable: /bin/bash
+
+    - name: Update APT cache with Jenkins repo
+      apt:
+        update_cache: yes
+
+    - name: Install Jenkins
+      apt:
+        name: jenkins
+        state: present
+
+    - name: Enable and start Jenkins
+      systemd:
+        name: jenkins
+        enabled: yes
+        state: started
+
+    - name: Add jenkins user to docker group
+      user:
+        name: jenkins
+        groups: docker
+        append: yes
+
+    - name: Restart Jenkins
+      systemd:
+        name: jenkins
+        state: restarted
