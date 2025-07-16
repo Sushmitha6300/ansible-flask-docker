@@ -85,7 +85,7 @@
         groups: docker
         append: yes
 
-    - name: Restart Jenkins
-      systemd:
-        name: jenkins
-        state: restarted
+    # - name: Restart Jenkins
+    #  systemd:
+    #    name: jenkins
+    #    state: restarted
