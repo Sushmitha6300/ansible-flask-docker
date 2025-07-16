@@ -33,12 +33,13 @@ pipeline {
         
         stage('Trigger Ansible Deployment') {
             steps {
-               sshagent(['controller-ssh-key']) {
-                  sh '''
-                  ssh -o StrictHostKeyChecking=no ubuntu@54.164.61.171 
-                  'cd /home/ubuntu/ansible-deploy-folder &&
-                  ansible-playbook -i inventory.ini playbook.yml'
-                  '''
+                sshagent(['controller-ssh-key']) {
+                    sh '''
+                       ssh -o StrictHostKeyChecking=no ubuntu@54.164.61.171 << EOF
+                       cd /home/ubuntu/ansible-deploy-folder
+                       ansible-playbook -i inventory.ini playbook.yml
+                       EOF
+                    '''
                 }
             }
         }
