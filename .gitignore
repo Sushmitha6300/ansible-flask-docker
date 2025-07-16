@@ -3,7 +3,8 @@ terraform/.terraform.lock.hcl
 terraform/ansible-key.pub
 terraform/ansible-key
 terraform/terraform.tfstate
-terraform/terraform.tfstate.backup
+
+
 
 
 
