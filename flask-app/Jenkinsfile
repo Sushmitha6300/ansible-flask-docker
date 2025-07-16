@@ -35,7 +35,7 @@ pipeline {
             steps {
                 sshagent(['controller-ssh-key']) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no ubuntu@34.205.63.118 'ansible-playbook -i inventory.ini playbook.yml'  
+                    ssh -o StrictHostKeyChecking=no ubuntu@34.205.63.118 'ansible-playbook -vv -i inventory.ini playbook.yml'  
                     '''
                 }
             }
