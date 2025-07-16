@@ -32,7 +32,7 @@ pipeline {
 
         stage('Deploy with Ansible') {
             steps {
-                sh 'ansible-playbook -i inventory.ini playbook.yml'
+                sh 'PATH=$PATH:/usr/bin ansible-playbook -i inventory.ini playbook.yml'
             }
         }
     }
