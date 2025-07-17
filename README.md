@@ -222,16 +222,7 @@ Use this token as the password when adding DockerHub credentials in Jenkins
 
 ✅ This allows Jenkins to SSH into the Ansible controller and trigger the deployment remotely.
 
-### 🔹 Step 9: Update Controller IP in Jenkinsfile
-
-In your Jenkinsfile, replace the controller-ec2-public-ip with the actual public IP of your controller EC2 instance:
-```bash
-ssh -o StrictHostKeyChecking=no ubuntu@controller-ec2-public-ip
-```
-
-✅ This ensures Jenkins can connect to the controller instance during deployment.
-
-### 🔹 Step 10: Push the project to GitHub
+### 🔹 Step 9: Push the project to GitHub
 
 - Go to GitHub and create a new public repository named anisble-flask-dcoker
 
@@ -265,11 +256,11 @@ Make sure to replace your-username with your actual GitHub username
 - Push it to DockerHub
 - Run the Ansible playbook to deploy the container on target EC2
 
-### 🔹 Step 11: Access the Flask App in Browser
+### 🔹 Step 10: Access the Flask App in Browser
 
 Open your app in a browser:
 ```bash
-http://<target-ec2-public-ip>:5000
+http://target-ec2-public-ip:5000
 ```
 
 You should see your custom Flask app running inside a Docker container deployed via Ansible 

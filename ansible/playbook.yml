@@ -85,6 +85,11 @@
         name: jenkins
         groups: docker
         append: yes
+    
+    - name: Restart Jenkins
+      systemd:
+        name: jenkins
+        state: restarted
 
 # Add new deploy section
 - name: Deploy Flask App from DockerHub
