@@ -98,13 +98,13 @@
   tasks:
 
     - name: Pull Docker image from DockerHub
-      shell: docker pull sushmitha6300/flask-app
+      shell: docker pull sushmitha6300/flask_app
       tags: deploy
     
     - name: Remove old container if it exists
-      shell: docker rm -f flask-app || true
+      shell: docker rm -f flask_app || true
 
     - name: Run Flask Docker container
-      shell: docker run -d -p 5000:5000 --name flask-app sushmitha6300/flask-app
+      shell: docker run -d -p 5000:5000 --name flask_app sushmitha6300/flask_app
       tags: deploy
 

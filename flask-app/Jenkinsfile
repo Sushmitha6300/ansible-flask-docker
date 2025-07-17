@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials') 
-        IMAGE_NAME = "sushmitha6300/flask-app"
+        IMAGE_NAME = "sushmitha6300/flask_app"
     }
 
     stages {
