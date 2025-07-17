@@ -30,23 +30,15 @@ pipeline {
             }
         }
         
-        stage('Get Controller IP') {
-            steps {
-              sh 'bash get-controller-ip.sh'
-            }
-        }
-
         stage('Trigger Ansible Deployment') {
             steps {
                 sshagent(['controller-ssh-key']) {
-                    script {
-                      def controllerIP = readFile('controller-ip.txt').trim()
-                      sh """
-                      ssh -o StrictHostKeyChecking=no ubuntu@${controllerIP} 'ansible-playbook -vv -i inventory.ini playbook.yml --tags deploy'
-                      """
-                    }
+                    sh """
+                    ssh -o StrictHostKeyChecking=no ubuntu@13.222.51.88 'ansible-playbook -vv -i inventory.ini playbook.yml --tags deploy'
+                    """
                 }
             }
         }
     }
 }
+
