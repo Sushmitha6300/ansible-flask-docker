@@ -3,13 +3,13 @@ pipeline {
 
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials') 
-        IMAGE_NAME = "sushmitha6300/flask_app"
+        IMAGE_NAME = "your-docker-hub-username/flask_app"
     }
 
     stages {
         stage('Clone Repo') {
             steps {
-                git branch: 'main', url: 'https://github.com/Sushmitha6300/ansible-flask-docker.git'
+                git branch: 'main', url: 'https://github.com/your-GitHub-username/ansible-flask-docker.git'
             }
         }
 
@@ -34,7 +34,7 @@ pipeline {
             steps {
                 sshagent(['controller-ssh-key']) {
                     sh """
-                    ssh -o StrictHostKeyChecking=no ubuntu@13.222.51.88 'ansible-playbook -vv -i inventory.ini playbook.yml --tags deploy'
+                    ssh -o StrictHostKeyChecking=no ubuntu@controller-public-ip 'ansible-playbook -vv -i inventory.ini playbook.yml --tags deploy'
                     """
                 }
             }
