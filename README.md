@@ -25,7 +25,7 @@ This DevOps project showcases a fully automated CI/CD pipeline to build, ship, a
 
 1. Developers push code (Flask app + Dockerfile + Jenkinsfile) to a GitHub repository
 2. Jenkins automatically pulls the code, builds a Docker image, and pushes it to DockerHub
-3. Ansible connects to the target EC2 instance, pulls the image from DockerHub, and runs the     container
+3. Ansible connects to the target EC2 instance, pulls the image from DockerHub, and runs the   container
 4. The Flask app becomes accessible via the EC2 instance's public IP on port 5000
 
 ---
@@ -76,7 +76,6 @@ ansible-flask-docker/
 │   ├── Dockerfile
 │   └── Jenkinsfile
 ├── .gitignore
-├── get-controller-ip.sh
 └── README.md
 ```
 
@@ -223,6 +222,11 @@ Use this token as the password when adding DockerHub credentials in Jenkins
 ✅ This allows Jenkins to SSH into the Ansible controller and trigger the deployment remotely.
 
 ### 🔹 Step 9: Push the project to GitHub
+
+- Replace controller-public-ip with the actual public IP displayed in the Terraform output after running terraform apply.
+```bash
+ssh -o StrictHostKeyChecking=no ubuntu@controller-public-ip 'ansible-playbook -vv -i inventory.ini playbook.yml --tags deploy'
+```
 
 - Go to GitHub and create a new public repository named anisble-flask-dcoker
 
