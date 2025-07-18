@@ -58,6 +58,8 @@ GitHub ──► Jenkins ──► DockerHub ──► Ansible ──► EC2 ─
 
 ## Architecture Diagram
 
+<img width="600" height="350" alt="Flask-app-architecture-diagram" src="https://github.com/user-attachments/assets/e27f7ee9-e2f6-4b72-92fb-131b80477c35" />
+
 ---
 
 ## Project Structure 
@@ -273,6 +275,9 @@ You should see your custom Flask app running inside a Docker container deployed 
 
 ## Output 
 
+<img width="1907" height="709" alt="ci-cd-pipeline-output" src="https://github.com/user-attachments/assets/b5d44630-5c14-428a-9ef1-b8ce2b9fa276" />
+
+<img width="1808" height="676" alt="flask-app-output" src="https://github.com/user-attachments/assets/0894b7b8-9aa1-43de-a464-95ffa4888d7e" />
 
 ---
 
