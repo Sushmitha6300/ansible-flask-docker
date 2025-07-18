@@ -283,13 +283,18 @@ You should see your custom Flask app running inside a Docker container deployed 
 
 ## About Me
 
-I'm Shravani, a self-taught and project-driven DevOps engineer passionate about building scalable infrastructure and automating complex workflows.
+Hey there! I’m Sushmitha, an aspiring DevOps Engineer passionate about automating infrastructure and streamlining deployments.
 
-I love solving real-world problems with tools like Terraform, Ansible, Docker, Jenkins, and AWS — and I’m always learning something new to sharpen my edge in DevOps.
+I enjoy working with tools like AWS, Terraform, Jenkins, Docker, Kubernetes, and more.
 
-**Connect with me:**
-- LinkedIn: www.linkedin.com/in/shravani3001
-- GitHub: https://github.com/Shravani3001
+Currently, I’m building hands-on projects to master the DevOps lifecycle — from infrastructure as code to CI/CD and monitoring.
+
+Always eager to learn, experiment, and take on new challenges in the cloud and DevOps world.
+
+**Let’s connect!**
+
+- LinkedIn: 
+- GitHub: https://github.com/Sushmitha6300
 
 
 
